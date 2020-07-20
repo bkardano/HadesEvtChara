@@ -81,6 +81,7 @@ public:
         kDirectivity                         ,
         kRatioEtEz                           ,
         kEt                                  ,
+//        kTOFRPCvsFWSumChargeZ                ,
         kNumCentralityEstimator              
     };
 
@@ -177,6 +178,7 @@ public:
         else if(s.CompareTo("Directivity")==0)                                  return kDirectivity;
         else if(s.CompareTo("RatioEtEz")==0)                                    return kRatioEtEz;
         else if(s.CompareTo("Et")==0)                                           return kEt;
+//        else if(s.CompareTo("TOFRPCvsFWSumChargeZ")==0)                                    return kTOFRPCvsFWSumChargeZ;
         else return kNumCentralityEstimator;
     }
 
@@ -568,6 +570,7 @@ public:
     Double_t FindXi( Double_t res, Double_t prec=1e-6, Int_t n=1) const;
 
     TH1F*    makePercentiles(TH1F* hist, Float_t fractionXsection=100., Int_t direction=-1);
+    //TH1F*    makePercentiles(TH2F* hist, Float_t fractionXsection=100., Int_t direction=-1); //FIXME
     Int_t    getCentralityClassNbins(UInt_t centC=k10);
     Float_t* getCentralityClassArray(UInt_t centC=k10);
     TH1F*    makeClasses(TH1F *h, Float_t fractionXsection=100., UInt_t centC=k10, Int_t direction=-1);
@@ -616,8 +619,8 @@ private:
     Bool_t  isSimulation;               // for simulation if catGeantKine is available
 
     Float_t fReferenceMeanSelTrack;     // track running mean reference point
-    //const Int_t maxFWCells = 302;
-
+    
+    //FIXME fixed cuts not needed
     vector<Float_t>  fFWminBeta;
     vector<Float_t>  fFWmaxBeta;
     vector<Float_t>  fFWminCharge;
@@ -631,9 +634,6 @@ private:
     vector<Bool_t>        useFWCut;
     Bool_t                excludeNoisyFWcells;
     
-    
-//    TObjArray*              arrayOfHits;           //-> collection of hits
-    
     vector<SimpleQVector*> arrayOfHits;
     vector<Int_t>         iFWHitvector;   // list of selected and shuffled FW hit-num. 
     vector<Float_t>       vQPhi;    
@@ -643,8 +643,8 @@ private:
     UInt_t fEventPlaneCorrectionFlag;
     Bool_t fQVectorCalcDone;
     
-    inline Bool_t isFlagSet(UInt_t flag, UInt_t status){ return (flag==(status&flag));}
-    inline Float_t getPhi(Float_t x, Float_t y){ return TVector2::Phi_0_2pi( TMath::Pi()+TMath::ATan2(-y,-x) );}
+    inline Bool_t  isFlagSet(UInt_t flag, UInt_t status){ return (flag==(status&flag));}
+    inline Float_t getPhi(Float_t x, Float_t y){ return (x==0 && y==0) ? -1 : TVector2::Phi_0_2pi( TMath::Pi()+TMath::ATan2(-y,-x) );}
 
     ClassDef(HParticleEvtCharaBK,3)
 

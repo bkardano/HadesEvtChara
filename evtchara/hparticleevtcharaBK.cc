@@ -174,7 +174,7 @@ HParticleEvtCharaBK::HParticleEvtCharaBK(const Text_t* name,const Text_t* title)
         fFWCutValuesHist.resize(kNumFWCutValues);
         for (int cutValue = 0; cutValue < (int)kNumFWCutValues; ++cutValue) fFWCutValuesHist[cutValue].resize(MAXFWCELLS);
         
-        
+        //FIXME fixed cuts not needed
         fFWminBeta.resize(3);
         fFWmaxBeta.resize(3);
         fFWminCharge.resize(3);
@@ -638,7 +638,7 @@ Int_t HParticleEvtCharaBK::GetFWmoduleSize(HWallHitSim* wall)
     return -1;
 }
 
-
+//FIXME
 // Bool_t HParticleEvtCharaBK::PassesCutsFW(HWallHitSim* wall)
 // {
 //     if(!wall) return kFALSE;
@@ -680,7 +680,7 @@ Bool_t HParticleEvtCharaBK::PassesCutsFW(HWallHitSim* wall, UInt_t eFWCut)
     Int_t cell      =  wall->getCell();
     if(cell<0 || cell>= MAXFWCELLS) return kFALSE;
     
-    if(excludeNoisyFWcells){
+    if(excludeNoisyFWcells){  //FIXME  if noisy cell that fFWCutValuesHist[][cell] should be missing!
         if(cell ==20 || cell ==53 || cell ==54 
             || cell ==64 || cell ==67 || cell ==79) return kFALSE;      //noisy cells
     }
@@ -892,7 +892,7 @@ Bool_t HParticleEvtCharaBK::fillQVectors(UInt_t statusflag, UInt_t nHarmonic)
     Double_t phi = -1;
     Double_t w = 1.;
 
-    Double_t sumOfWeights=0;
+    Double_t sumOfWeights=0;  //FIXME this is needed?
     //Double_t nHits=0;
 
     Int_t nHits = arrayOfHits.size();
@@ -902,7 +902,7 @@ Bool_t HParticleEvtCharaBK::fillQVectors(UInt_t statusflag, UInt_t nHarmonic)
         if(isFlagSet(kShiftFW, statusflag)) phi = arrayOfHits[i]->Phi();
         else                                phi = arrayOfHits[i]->PhiOrg();
 
-        if(isFlagSet(kWeightCharge, statusflag)) w = arrayOfHits[i]->Weight1();
+        if(isFlagSet(kWeightCharge, statusflag)) w  = arrayOfHits[i]->Weight1();
         if(isFlagSet(kWeightTheta, statusflag))  w *= arrayOfHits[i]->Weight2();
         
         dQX += w * TMath::Cos(nHarmonic*phi);
@@ -916,7 +916,7 @@ Bool_t HParticleEvtCharaBK::fillQVectors(UInt_t statusflag, UInt_t nHarmonic)
             dQXB += w * TMath::Cos(nHarmonic*phi);
             dQYB += w * TMath::Sin(nHarmonic*phi);
         }
-            sumOfWeights +=w;
+            sumOfWeights +=w;  //FIXME this is needed?
     }
 //   printf("nHits: %d dQX: %.3f, dQY: %.3f \t  A:  dQX: %.3f, dQY: %.3f \t B:  dQX: %.3f, dQY: %.3f \t b weight: %.3f \n",
 //                 nHits, dQX, dQY , dQXA, dQYA ,dQXB, dQYB, sumOfWeights );
@@ -924,12 +924,24 @@ Bool_t HParticleEvtCharaBK::fillQVectors(UInt_t statusflag, UInt_t nHarmonic)
 
         if(isFlagSet(kReCentering, statusflag)){
             if(isFlagSet(kShiftFW, statusflag)){
-                if(isFlagSet(kWeightCharge, statusflag)){ dQXShift  = getCorrection(kQx2WCharge); dQYShift  = getCorrection(kQy2WCharge);}
-                else{                                     dQXShift  = getCorrection(kQx2);        dQYShift  = getCorrection(kQy2);}
+                if(isFlagSet(kWeightCharge, statusflag)){ 
+                    dQXShift  = getCorrection(kQx2WCharge);
+                    dQYShift  = getCorrection(kQy2WCharge);
+                }
+                else{
+                    dQXShift  = getCorrection(kQx2);
+                    dQYShift  = getCorrection(kQy2);
+                }
             }
             else{
-                if(isFlagSet(kWeightCharge, statusflag)){ dQXShift  = getCorrection(kQxWCharge); dQYShift  = getCorrection(kQyWCharge);}
-                else{                                     dQXShift  = getCorrection(kQx);        dQYShift  = getCorrection(kQy);}
+                if(isFlagSet(kWeightCharge, statusflag)){
+                    dQXShift  = getCorrection(kQxWCharge);
+                    dQYShift  = getCorrection(kQyWCharge);
+                }
+                else{
+                    dQXShift  = getCorrection(kQx);
+                    dQYShift  = getCorrection(kQy);
+                }
             }
             
             dQX  -= dQXShift;
@@ -940,12 +952,24 @@ Bool_t HParticleEvtCharaBK::fillQVectors(UInt_t statusflag, UInt_t nHarmonic)
             dQYB -= dQYShift;
             if(isFlagSet(kScaling, statusflag)){
                 if(isFlagSet(kShiftFW, statusflag)){
-                    if(isFlagSet(kWeightCharge, statusflag)){dQXScale  = getCorrectionError(kQx2WCharge); dQYScale  = getCorrectionError(kQy2WCharge);}
-                    else{                                    dQXScale  = getCorrectionError(kQx2); dQYScale  = getCorrectionError(kQy2);}
+                    if(isFlagSet(kWeightCharge, statusflag)){
+                        dQXScale  = getCorrectionError(kQx2WCharge);
+                        dQYScale  = getCorrectionError(kQy2WCharge);
+                    }
+                    else{
+                        dQXScale  = getCorrectionError(kQx2);
+                        dQYScale  = getCorrectionError(kQy2);
+                    }
                 }
                 else{
-                    if(isFlagSet(kWeightCharge, statusflag)){dQXScale  = getCorrectionError(kQxWCharge); dQYScale  = getCorrectionError(kQyWCharge);}
-                    else{                                    dQXScale  = getCorrectionError(kQx); dQYScale  = getCorrectionError(kQy);}
+                    if(isFlagSet(kWeightCharge, statusflag)){
+                        dQXScale  = getCorrectionError(kQxWCharge);
+                        dQYScale  = getCorrectionError(kQyWCharge);
+                    }
+                    else{
+                        dQXScale  = getCorrectionError(kQx);
+                        dQYScale  = getCorrectionError(kQy);
+                    }
                 }
                 
                 dQX  /= dQXScale;
@@ -996,11 +1020,14 @@ void HParticleEvtCharaBK::printQVectors()
     if(fQVectorCalcDone){ printf("QVector Calculation Done\n");}
     else{
         printf("QVector Calculation NOT Done !!!!!!! retry now\n");
-        if(!fillQVectors(fEventPlaneCorrectionFlag)) {printf("QVector Calculation failed !!!!!!!\n"); return ;}
+        if(!fillQVectors(fEventPlaneCorrectionFlag)) {
+            printf("QVector Calculation failed !!!!!!!\n"); return;
+        }
     }
 
     printf("##### vQPhi: %.3f \t vQPhiA: %.3f \t vQPhiB: %.3f \t\t Corr: %s #####\n",
-               vQPhi[0], vQPhi[1], vQPhi[2],  getStringEventPlaneCorrection(fEventPlaneCorrectionFlag).Data() );
+               vQPhi[0], vQPhi[1], vQPhi[2],  
+               getStringEventPlaneCorrection(fEventPlaneCorrectionFlag).Data() );
     return;
 }
 
@@ -1040,11 +1067,12 @@ Float_t HParticleEvtCharaBK::getCorrectionPhi(Float_t phi){
 
 Float_t HParticleEvtCharaBK::getEventPlane(UInt_t statusflag, UInt_t SubEvent, UInt_t nHarmonic)
 {
+    //FIXME  are nHarmonic propagated?
     if(isNewEvent()){
         fillHitArray();
     }
     if(!fQVectorCalcDone){
-        if(!fillQVectors(statusflag)) return -1;
+        if(!fillQVectors(statusflag)) return -1;  //FIXME  nHarmonic missing?
     }
     
     if(fQVectorCalcDone && fEventPlaneCorrectionFlag == statusflag){

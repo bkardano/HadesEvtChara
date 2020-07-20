@@ -1,8 +1,8 @@
- last update of this HOWTO.txt 04.06.2019 13:00
+ last update of this HOWTO.txt 27.01.2020 12:00
 
 
- AUTHOR : B. Kardan  04.06.2019
- VERSION : 0.72 (evtchara07)
+ AUTHOR : B. Kardan  27.01.2020
+ VERSION : 0.8 (evtchara08)
 
  HParticleEvtChara
 
@@ -247,10 +247,9 @@
           Double_t MeanCosDeltaPhiAB  = h2->GetMean();        //< cos n delta_phi>;
           Double_t dV = TMath::Sqrt(MeanCosDeltaPhiAB);
           Double_t dChi = FindXi(dV,1e-6, 1);                 // for first harmonic
-          Double_t dEPres1 = HParticleEvtCharaBK::ComputeResolution( dChi );    // for first harmonic
-          Double_t dEPres2 = HParticleEvtCharaBK::ComputeResolution( dChi , 2); // for second ...
-          dV = ComputeResolution( TMath::Sqrt2()*dChi , 1);
-          printf("An estimate of the event plane resolution first order is: %f\n", dV );
+          Double_t dEPres1 = HParticleEvtCharaBK::ComputeResolution(TMath::Sqrt2()*dChi , 1);    // for first harmonic
+          Double_t dEPres2 = HParticleEvtCharaBK::ComputeResolution(TMath::Sqrt2()*dChi , 2);    // for second ...
+          printf("An estimate of the event plane resolution first order is: %f\n", dEPres1 );
 
 
 7.7. to correct your flow-values use 1./dEPres1
@@ -276,5 +275,8 @@ Change History:
 19.02.2019  release of 0.7
 24.04.2019  implementation of useFWCut() and check if FWcut hist are loaded
 04.06.2019  fix of embeded-sim into data and removed of high-momentum condition
+27.01.2020  fix for unexpected "error<TROOT::TVector2::Phi_0_2pi>: function called with NaN"
+20.02.2020  fix mistake in How-To EP-Rsolution (Voloshin) missing TMath::Sqrt2()
+08.07.2020  reformat code in fillQVectors()
 
  
