@@ -1,8 +1,8 @@
- last update of this HOWTO.txt 27.01.2020 12:00
+ last update of this HOWTO.txt 7.10.2020 14:00
 
 
- AUTHOR : B. Kardan  27.01.2020
- VERSION : 0.8 (evtchara08)
+ AUTHOR : B. Kardan  7.10.2020
+ VERSION : 0.81 (evtchara08)
 
  HParticleEvtChara
 
@@ -278,5 +278,9 @@ Change History:
 27.01.2020  fix for unexpected "error<TROOT::TVector2::Phi_0_2pi>: function called with NaN"
 20.02.2020  fix mistake in How-To EP-Rsolution (Voloshin) missing TMath::Sqrt2()
 08.07.2020  reformat code in fillQVectors()
-
+07.10.2020  reformat code makeClasses()
+            added function findEdgeBin() to find theshold-edge
+            
+to be fixed 
+ [] getEventWeight() not adjusted for AgAg?
  

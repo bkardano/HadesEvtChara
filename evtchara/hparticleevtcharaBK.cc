@@ -160,7 +160,7 @@ HParticleEvtCharaBK::HParticleEvtCharaBK(const Text_t* name,const Text_t* title)
         useFWCut[0]=kFALSE;  //kBetaCuts  
         useFWCut[1]=kTRUE;   //kTimeCuts  
         useFWCut[2]=kTRUE;   //kChargeCuts
-        excludeNoisyFWcells = kTRUE;
+        excludeNoisyFWcells = kFALSE;
         
         fRandom       = new TRandom2();
         
@@ -610,6 +610,8 @@ Bool_t HParticleEvtCharaBK::isNewEvent()
 
 Float_t HParticleEvtCharaBK::getEventWeight()
 {
+        //FIXME for AgAg 
+    
     if(isSimulation) return 1;
 // ---- PT3 Event without PT2 Events --------------
     if(gHades->getCurrentEvent()->getHeader()->getTBit() == 8192) return 1;
@@ -638,34 +640,6 @@ Int_t HParticleEvtCharaBK::GetFWmoduleSize(HWallHitSim* wall)
     return -1;
 }
 
-//FIXME
-// Bool_t HParticleEvtCharaBK::PassesCutsFW(HWallHitSim* wall)
-// {
-//     if(!wall) return kFALSE;
-//     Float_t betaFW  =  wall->getDistance() / wall->getTime()/ 299.792458;
-//     
-//      if(!isSimulation){
-//          if( (GetFWmoduleSize(wall) == 1
-//               &&  wall->getCharge()>fFWminCharge[0]&&betaFW>fFWminBeta[0] && betaFW <fFWmaxBeta[0] ) //small
-//     	  || (GetFWmoduleSize(wall) == 2
-//               &&  wall->getCharge()>fFWminCharge[1]&&betaFW>fFWminBeta[1] && betaFW <fFWmaxBeta[1] ) //medium
-//     	  || (GetFWmoduleSize(wall) == 3
-//               &&  wall->getCharge()>fFWminCharge[2]&&betaFW>fFWminBeta[2] && betaFW <fFWmaxBeta[2] )  //large
-//               ) return kTRUE;	  
-//      }
-//      else
-//      {
-//          if( (GetFWmoduleSize(wall) == 1  
-//               &&  betaFW>fFWminBeta[0] && betaFW <fFWmaxBeta[0] ) //small
-//           || (GetFWmoduleSize(wall) == 2  
-//               &&  betaFW>fFWminBeta[1] && betaFW <fFWmaxBeta[1] ) //medium
-//           || (GetFWmoduleSize(wall) == 3  
-//               &&  betaFW>fFWminBeta[2] && betaFW <fFWmaxBeta[2] )  //large
-//               ) return kTRUE;
-//      }
-//      return kFALSE;
-// }
-
 Bool_t HParticleEvtCharaBK::PassesCutsFW(HWallHitSim* wall)
 {
     for (int ep = 0; ep < (int) kNumFWCutValues; ++ep){
@@ -690,7 +664,6 @@ Bool_t HParticleEvtCharaBK::PassesCutsFW(HWallHitSim* wall, UInt_t eFWCut)
     if(eFWCut==kTimeCuts  ) value  =  wall->getTime();
     if(eFWCut==kChargeCuts) value  =  wall->getCharge();
     
-
     if(fFWCutValuesHist[eFWCut][cell]){
         if(fFWCutValuesHist[eFWCut][cell]->GetBinContent(fFWCutValuesHist[eFWCut][cell]->FindBin(value)) > 0) return kTRUE;
     }
@@ -715,24 +688,6 @@ Int_t HParticleEvtCharaBK::getFWCharge(HWallHitSim* wall)
     
     return Z;
 }
-/*
-Int_t HParticleEvtCharaBK::getFWCharge(HWallHitSim* wall)
-{
-    Float_t Charge = 0;
-    if(!wall) return kFALSE;
-    if(!isSimulation) Charge = wall->getCharge();
-    else              Charge = 93.*pow(wall->getCharge(),0.46-0.006*sqrt(wall->getCharge()));  // parametrization from R.Holzmann
-
-    if(Charge>=fFWChargeCuts[5])       return 6;
-    else if(Charge>=fFWChargeCuts[4])  return 5;
-    else if(Charge>=fFWChargeCuts[3])  return 4;
-    else if(Charge>=fFWChargeCuts[2])  return 3;
-    else if(Charge>=fFWChargeCuts[1])  return 2;
-    else if(Charge>=fFWChargeCuts[0])  return 1;
-    else return 0;
-    
-}
-*/
 
 TH1F* HParticleEvtCharaBK::getEventPlaneCorrectionHist(UInt_t flag) const
 {
@@ -1476,16 +1431,85 @@ Bool_t HParticleEvtCharaBK::addEstimatorHist(TH1F *hist, Float_t fractionXsectio
     return kTRUE;
 }
 
+Int_t HParticleEvtCharaBK::findEdgeBin(TH1F *htemp)
+{
+      if(!htemp) return 0;
+      Int_t   MeanBin = htemp->FindBin(htemp->GetMean());
+      Int_t   nBinsX  = htemp->GetNbinsX();
+      Float_t ThresholdBinValue = FLT_MAX;
+      Int_t   ThresholdBin = 0;
+      for (Int_t i=MeanBin; i<nBinsX; i++) {
+             if (htemp->GetBinContent(i)<ThresholdBinValue) {
+                 ThresholdBinValue = htemp->GetBinContent(i);
+                 ThresholdBin = htemp->GetBinLowEdge(i);
+             }
+      }
+     Float_t QA=0;
+     Float_t QA2=0;
+     Int_t count=0;
+     Int_t MinFitGaus2=0;
+
+     Float_t gaus2Par1=0;
+     Float_t gaus2Par2=0;
+     Float_t gaus2Par3=0;
+     Float_t buffer1=0,buffer2=0;
+     TF1 *fgaus = new TF1("fgaus","gaus",0,htemp->GetNbinsX());
+
+
+
+     for (Int_t j=MeanBin; j<ThresholdBin; j++) {
+            htemp->Fit("fgaus","+QR0","",j,ThresholdBin);
+            QA2=QA;
+            buffer1 = gaus2Par2;
+            buffer2 = gaus2Par3;
+            gaus2Par1=fgaus->GetParameter(0);
+            gaus2Par2=fgaus->GetParameter(1);
+            gaus2Par3=fgaus->GetParameter(2);
+            if(fgaus->GetNDF() > 1.) QA  = fgaus->GetChisquare()/fgaus->GetNDF();
+                if(0) printf("gausFit QA %f, Par1 %f , Par2  %f, Par3 %f, IBin  %d\n",
+                   QA,gaus2Par1,gaus2Par2,gaus2Par3,j);
+            if  (  (gaus2Par2<buffer1) || (gaus2Par3>buffer2)) count++;
+            if ( (QA<1.5) ) count++;
+            if  (count>2) {MinFitGaus2=j-2; break;}
+     }
+     Double_t ochi2 = 0;
+     
+     // ======== Threshold Finder
+     for (Int_t j=MinFitGaus2; j<nBinsX; j++) {
+             if(fgaus->Eval(htemp->GetBinCenter(j)) < 1.){
+                     ThresholdBin      = htemp->GetBinCenter(j);
+                     break;
+             }
+     }
+     /*
+     for (Int_t j=MinFitGaus2; j<nBinsX; j++) {
+             //nChi++;
+             if (htemp->GetBinContent(j) < 1.0) continue;
+             Double_t diff =  htemp->GetBinContent(j) - fgaus->Eval(htemp->GetBinCenter(j))  ;
+             //diff = diff / (TMath::Power(slice->GetBinError(j),2) + TMath::Power(fgaus->IntegralError(slice->GetBinLowEdge(j), slice->GetBinLowEdge(j+1)) ,2)); 
+             ochi2 += diff;
+             if(diff/(float)htemp->GetBinContent(j)>0.5){
+                     ThresholdBin      = htemp->GetBinCenter(j);
+                     //ThresholdValue    = slice->GetBinContent(j);
+                     break;
+             }
+             //printf("MinCont: %f,  IBin  %d , diff %f ,   ratio: %f  \t\t chi2:  %f   chi2/NDF  %f\n",slice->GetBinContent(j), j,diff, diff/(float)slice->GetBinContent(j) , ochi2, (float)ochi2/nChi);
+     }
+     */
+      return ThresholdBin;
+}
+
 TH1F* HParticleEvtCharaBK::makePercentiles(TH1F *htemp, Float_t fractionXsection, Int_t direction)
 {
   if(!htemp) return 0;  
-
+  if(fractionXsection<0.1) return 0;
   TH1F *hpercent  = (TH1F*) htemp->Clone("hpercent");
   TString name=htemp->GetName();   
   name.Append("_percentile");
   hpercent->SetNameTitle(name.Data(),name.Data());
   hpercent->Reset();
-  Float_t totIntegral = fractionXsection / htemp->Integral(1,htemp->GetNbinsX()); 
+  Int_t maxBin = findEdgeBin(htemp);
+  Float_t totIntegral = fractionXsection / htemp->Integral(1,maxBin); 
   if(direction<0){
       for (int ibin=1; ibin<=htemp->GetNbinsX(); ibin++){
           hpercent->SetBinContent(ibin, totIntegral * htemp->Integral(ibin,htemp->GetNbinsX()) );
@@ -1501,81 +1525,81 @@ TH1F* HParticleEvtCharaBK::makePercentiles(TH1F *htemp, Float_t fractionXsection
 
 TH1F* HParticleEvtCharaBK::makeClasses(TH1F *htemp, Float_t fractionXsection, UInt_t centC, Int_t direction)
 {
-
     if(!htemp) return 0;
     if(fractionXsection<0.1) return 0;
     Int_t nClasses = getCentralityClassNbins(centC);
-    Double_t integral = htemp->Integral();
-    Double_t norm = integral / fractionXsection;
     Float_t* PercentileArray = getCentralityClassArray(centC);
     std::vector<Double_t> binEdge;
     std::vector<Double_t> xSection;
     std::vector<TString>  fLabels; 
 
-
-    Int_t start = 1;
-    Int_t stop = htemp->GetNbinsX();
-    if(direction < 0){
-        direction = -1;
-        start = htemp->GetNbinsX()-1;
-        stop = 0;
-        binEdge.push_back(htemp->GetBinLowEdge(htemp->GetNbinsX()));
-    }
-    else{
-        direction = 1;
-        binEdge.push_back(htemp->GetBinLowEdge(1));
-    }
-    Int_t bin = start;
+    Int_t maxBin = findEdgeBin(htemp);
+    cout << "maxBin: " << maxBin << endl;
+    Double_t integral = htemp->Integral(1,maxBin);
+    //Double_t norm = integral / fractionXsection;
+    Float_t totIntegral = fractionXsection / htemp->Integral(1,maxBin);
     Float_t lxs = 0;
     Float_t txs = 0;
-
-
-    // Find edge and starting point at begining
-    while(1){
-        lxs += htemp->GetBinContent(bin);
-        Double_t pxs = lxs/norm;
-        if( pxs>0.001 ){
-          if (direction>0)   binEdge.push_back(htemp->GetBinLowEdge(bin+1));
-          else               binEdge.push_back(htemp->GetBinLowEdge(bin));
-          xSection.push_back(pxs);
-          bin += direction;
-          break;
-        }
-        bin += direction;
-    }
-
-    Float_t totxs = 0;
-    for (Int_t i = 0; i < nClasses; ++i) {
-        lxs = 0 ;
-        totxs += PercentileArray[i];
-        while(1){
-            lxs += htemp->GetBinContent(bin);
-            txs += htemp->GetBinContent(bin);
-            Double_t pxs = txs/norm;
-            Double_t tdiff = (txs+htemp->GetBinContent(bin+direction))/norm;
-            if( ( pxs>totxs )
-                || (TMath::Abs(pxs-totxs)<=TMath::Abs(tdiff-totxs)) )
-            {
-              if (direction>0)  binEdge.push_back(htemp->GetBinLowEdge(bin+1));
-              else              binEdge.push_back(htemp->GetBinLowEdge(bin));
-              xSection.push_back(lxs/norm);
-              bin += direction;
-              break;
+    Float_t totxs = PercentileArray[0];
+    Int_t   iClass = 0; 
+    Double_t pxs = 0;
+    if(direction<0){
+            binEdge.push_back(htemp->GetBinLowEdge(htemp->GetNbinsX()));
+            xSection.push_back( totIntegral * htemp->Integral(maxBin,htemp->GetNbinsX()) );
+            binEdge.push_back(htemp->GetBinLowEdge(maxBin));
+            for (int ibin=maxBin; ibin>0; ibin--){
+                    //cout << "Bin: " << ibin << " lxs " << lxs <<  endl;
+                    lxs += htemp->GetBinContent(ibin);
+                    txs += htemp->GetBinContent(ibin);
+                    pxs = totIntegral * txs;
+                    Double_t tdiff = totIntegral * (txs + htemp->GetBinContent(ibin-1));
+                    if( ( pxs>totxs )  && (TMath::Abs(pxs-totxs)<TMath::Abs(tdiff-totxs)) ){
+                            binEdge.push_back(htemp->GetBinLowEdge(ibin));
+                            xSection.push_back(totIntegral * lxs );
+                            cout << "Bin: " << ibin << " lxs " << lxs << " pxs " << pxs << " totxs " << totxs << "iClass" << iClass <<  endl;
+                            //if (totxs>fractionXsection ||  (txs>=integral) ){
+                            //        break;
+                            //}
+                            iClass++;
+                            totxs += PercentileArray[iClass];
+                            lxs = 0;
+                    }
+                    if( ( pxs>=fractionXsection ) ){
+                            binEdge.push_back(htemp->GetBinLowEdge(ibin));
+                            xSection.push_back(totIntegral * lxs );
+                            cout << "BREAK--- Bin: " << ibin << " lxs " << lxs << " pxs " << pxs << " totxs " << totxs << "iClass" << iClass <<  endl;
+                            break;
+                    }
             }
-            bin += direction;
-            if ( (direction>0 && bin>=stop) || (direction<0 && bin<=stop ) || (txs>=integral) ) break;
-        }
-        if(totxs>fractionXsection || (direction>0 && bin>=stop) || (direction<0 && bin<=stop ) || (txs>=integral)) break;
-    }
 
+    }
+    cout << "totxs: " << totxs << " pxs: " <<pxs << endl;
+    //binEdge.push_back(htemp->GetBinLowEdge(1)); 
+    //if(txs<integral) xSection.push_back( totIntegral * integral-txs );
+    //else             xSection.push_back( 0. );    
       fLabels.push_back("overflow");
-      Double_t totXsection =0;
-      for(std::vector<double>::size_type index = 1; index < xSection.size()-1; ++index){
+      Double_t totXsection = 0;
+      for(Int_t index = 1; index < xSection.size(); ++index){
           fLabels.push_back(Form("%02.0f-%02.0f",round(totXsection),round(totXsection+xSection[index])) );
           totXsection += xSection[index];
       }
-      fLabels.push_back("underflow");
- 
+      //if( ( pxs<100. ) ){
+      //        binEdge.push_back(htemp->GetBinLowEdge(1));
+      //        xSection.push_back(totIntegral * integral-txs );
+      //        fLabels.push_back("underflow");
+      //        cout << "BREAK 2--- "  << " lxs " << lxs << " pxs " << pxs << " totxs " << totxs << "iClass" << iClass <<  endl;
+      //}
+      
+      for(Int_t bin = 0; bin < fLabels.size(); ++bin){
+              cout << fLabels[bin] << endl;
+      }
+      for(Int_t bin = 0; bin < xSection.size(); ++bin){
+              cout << xSection[bin] << endl;
+      }
+      for(Int_t bin = 0; bin < binEdge.size(); ++bin){
+              cout << binEdge[bin] << endl;
+      }
+      cout << "fLabels.size(): " << fLabels.size() << " xSection.size() " << xSection.size() << " binEdge.size() " << binEdge.size() <<  endl;
       std::reverse(fLabels.begin(),fLabels.end());
       std::reverse(binEdge.begin(), binEdge.end());
       std::reverse(xSection.begin(), xSection.end());
@@ -1587,7 +1611,7 @@ TH1F* HParticleEvtCharaBK::makeClasses(TH1F *htemp, Float_t fractionXsection, UI
       name = Form("%s_%s_fixedCuts", name.Data(), getStringCentralityClass(centC).Data());
       TH1F *hfixedCuts = new TH1F(name.Data(), name.Data(), binEdge.size()-1, xlowbins); 
 
-      for(std::vector<double>::size_type bin = 0; bin < fLabels.size(); ++bin){
+      for(Int_t bin = 0; bin < fLabels.size(); ++bin){
           (hfixedCuts->GetXaxis())->SetBinLabel(bin+1,fLabels[bin]);
           hfixedCuts->SetBinContent(bin+1, fLabels.size()-bin-1);
           hfixedCuts->SetBinError(bin+1, xSection[bin]);

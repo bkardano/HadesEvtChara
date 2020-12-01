@@ -569,6 +569,7 @@ public:
     Double_t ComputeResolution( Double_t x, Int_t n=1 ) const;
     Double_t FindXi( Double_t res, Double_t prec=1e-6, Int_t n=1) const;
 
+    Int_t    findEdgeBin(TH1F *htemp);
     TH1F*    makePercentiles(TH1F* hist, Float_t fractionXsection=100., Int_t direction=-1);
     //TH1F*    makePercentiles(TH2F* hist, Float_t fractionXsection=100., Int_t direction=-1); //FIXME
     Int_t    getCentralityClassNbins(UInt_t centC=k10);
