@@ -1,0 +1,20 @@
+1.  mkdir ./svn/
+2.  cd ./svn/
+3.  svn co https://subversion.gsi.de/hades/hydra2/trunk/ hydra2-evt/
+4.  be sure to use the right defall.sh
+
+      . ./defall.sh
+
+5.  that MYHADDIR=... is set to your private lib-directory (best place would be on nyx)
+
+      echo ${MYHADDIR}
+
+6.  go to ./svn/hydra2-evt/particle/  and run
+
+      make; make install
+
+7.  ckeck that MYHADDIR=... contains the libParticle.so
+
+      ls ${MYHADDIR}/lib
+
+8. 
