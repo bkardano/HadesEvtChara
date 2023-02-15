@@ -1,7 +1,7 @@
- last update of this HOWTO.txt 7.10.2020 14:00
+ last update of this HOWTO.txt 7.9.2022 12:00
 
 
- AUTHOR : B. Kardan  7.10.2020
+ AUTHOR : B. Kardan  7.9.2022
  VERSION : 0.81 (evtchara08)
 
  HParticleEvtChara
@@ -230,8 +230,9 @@
           Int_t i180       = h->FindBin(TMath::Pi());
           Double_t ratio   = h->Integral(i90,i180) /h->Integral(1,i180);
           Double_t dChi    = sqrt(-2.*TMath::Log(2.*ratio));
-          Double_t dEPres1 = HParticleEvtCharaBK::ComputeResolution( dChi );    // for first harmonic
-          Double_t dEPres2 = HParticleEvtCharaBK::ComputeResolution( dChi , 2); // for second ...
+          Double_t dEPres1 = HParticleEvtCharaBK::ComputeResolution( dChi , 1);    // for first harmonic
+          Double_t dEPres2 = HParticleEvtCharaBK::ComputeResolution( dChi , 2);    // for second ...
+          printf("An estimate of the event plane resolution first order is: %f\n", dEPres1 );
 
 7.6.  the second option will be described here soon here ;)
       (Voloshin method - precise iterative resolution search)
@@ -246,9 +247,10 @@
 
           Double_t MeanCosDeltaPhiAB  = h2->GetMean();        //< cos n delta_phi>;
           Double_t dV = TMath::Sqrt(MeanCosDeltaPhiAB);
-          Double_t dChi = FindXi(dV,1e-6, 1);                 // for first harmonic
-          Double_t dEPres1 = HParticleEvtCharaBK::ComputeResolution(TMath::Sqrt2()*dChi , 1);    // for first harmonic
-          Double_t dEPres2 = HParticleEvtCharaBK::ComputeResolution(TMath::Sqrt2()*dChi , 2);    // for second ...
+          Double_t dChiSub = FindXi(dV,1e-6, 1);              // Sub-Event Resolution-Parameter
+          Double_t dChi    = TMath::Sqrt2()*dChiSub;
+          Double_t dEPres1 = HParticleEvtCharaBK::ComputeResolution( dChi , 1);    // for first harmonic
+          Double_t dEPres2 = HParticleEvtCharaBK::ComputeResolution( dChi , 2);    // for second ...
           printf("An estimate of the event plane resolution first order is: %f\n", dEPres1 );
 
 
@@ -280,7 +282,8 @@ Change History:
 08.07.2020  reformat code in fillQVectors()
 07.10.2020  reformat code makeClasses()
             added function findEdgeBin() to find theshold-edge
-            
+07.09.2022  updated How-To 
+
 to be fixed 
  [] getEventWeight() not adjusted for AgAg?
  

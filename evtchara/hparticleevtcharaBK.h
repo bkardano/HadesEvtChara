@@ -612,7 +612,7 @@ private:
     TRandom*  fRandom;
     
     // -------------------------------------------------------------------------
-    UInt_t  fDayOfYear;                 // day of the year extracted fron filename (sim=0)
+    UInt_t  fDayOfYear;                 // day of the year extracted from filename (sim=0)
     UInt_t  currentEventSeqNumber;      // running seq. num. of event
     
     // flags

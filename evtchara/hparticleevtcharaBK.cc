@@ -1105,6 +1105,11 @@ Int_t HParticleEvtCharaBK::getCentralityClass(TString estimator)
     // legacy code
     // Return centrality class, default in 5% of total cross section with estimator
     // or with preset classes like FOPI {6.3%, 21.0%, 30.9%}
+	static Int_t errorCount;
+	if(errorCount<10) {
+		errorCount++;
+		Error("getCentralityClass()","Dont use this legacy function since it is very slow. Please have a look into the HOWTO!");
+	}
 
     if (estimator.CompareTo("TOFRPCtimecut")==0 || estimator.CompareTo("TOFRPC5")==0) 
         return getCentralityClass(HParticleEvtCharaBK::kTOFRPC, HParticleEvtCharaBK::k5);
