@@ -282,7 +282,9 @@ Change History:
 08.07.2020  reformat code in fillQVectors()
 07.10.2020  reformat code makeClasses()
             added function findEdgeBin() to find theshold-edge
-07.09.2022  updated How-To 
+07.09.2022  updated How-To
+20.03.2024  avoid devision by Zero from getCorrectionError() - now gives 1
+29.01.2024  wrong if-statement corrected: if(dQX==0 && dQX==0) - thanks to S.Kim 
 
 to be fixed 
  [] getEventWeight() not adjusted for AgAg?

@@ -711,6 +711,7 @@ Float_t HParticleEvtCharaBK::getCorrectionError(UInt_t flag)
     Double_t cent = getCentralityPercentile();
     if(getEventPlaneCorrectionHist(flag)) 
         fCorrectionError = getEventPlaneCorrectionHist(flag)->GetBinError(getEventPlaneCorrectionHist(flag)->FindBin(cent, fDayOfYear) );
+    if(fCorrectionError==0) fCorrectionError = 1.;
     return fCorrectionError;
 }
 
@@ -935,21 +936,10 @@ Bool_t HParticleEvtCharaBK::fillQVectors(UInt_t statusflag, UInt_t nHarmonic)
                 dQYB /= dQYScale;
             }
         }
-    //    printf("n nHits: %d dQXShift: %.3f, dQYShift: %.3f \t  dQXScale: %.3f, dQYScale: %.3f \t Corr: %s \n",
-    //               nHits, dQXShift, dQYShift , dQXScale, dQYScale, getStringEventPlaneCorrection(statusflag).Data() );
-    //    printf("n nHits: %d dQX: %.3f, dQY: %.3f \t A:  dQX: %.3f, dQY: %.3f \t B:  dQX: %.3f, dQY: %.3f \t Corr: %s \n",
-    //               nHits, dQX, dQY , dQXA, dQYA ,dQXB, dQYB, getStringEventPlaneCorrection(statusflag).Data() );
-    //    printf("\n");
 
-        if(dQX==0 && dQX==0)   return kFALSE;
-        if(dQXA==0 && dQXA==0) return kFALSE;
-        if(dQXB==0 && dQXB==0) return kFALSE;
-
-
-
-   //vQ ->Set(dQX ,dQY );
-   //vQA->Set(dQXA,dQYA);
-   //vQB->Set(dQXB,dQYB);
+   if(dQX==0  && dQY==0)  return kFALSE;
+   if(dQXA==0 && dQYA==0) return kFALSE;
+   if(dQXB==0 && dQYB==0) return kFALSE;
     
    if(isFlagSet(kRotation, statusflag)){
        Float_t corrPsi = getCorrectionPhi(getPhi(dQX ,dQY ));
