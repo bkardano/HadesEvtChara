@@ -3,6 +3,8 @@
 A lightweight utility for applying per-event resolution corrections to flow observables in HADES analyses.  
 Instead of dividing by a single averaged **Rn**, each event is corrected with an individual **Rn** value looked up from a 2D matrix indexed by `(N_TOFRPC, Z_FW)`.
 
+Reference: https://inspirehep.net/literature/1207642
+
 ---
 
 ## Files
@@ -133,7 +135,7 @@ for (Int_t iHarm = 0; iHarm < nHarmonics; iHarm++) {
 
 ## Validation
 
-Both the event-by-event method and the conventional approach (dividing by a single mean **Rₙ**) yield consistent results for `v₁(pT)` — shapes and absolute values agree within statistical uncertainties. The event-by-event method additionally accounts for event-geometry fluctuations that a global average cannot capture.
+Both the event-by-event method and the conventional approach (dividing by a single mean **Rₙ**) yield consistent results for `v₁(pT)` — shapes and absolute values agree within statistical uncertainties.
 
 ---
 
