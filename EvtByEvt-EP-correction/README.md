@@ -51,6 +51,11 @@ or for Mar19 Ag+Ag 1.58 AGeV
 EPresCorrFile = "EPHistQA_mar19_ag158ag_3200A_gen6_pass11_EPResolution_TOFRPC_FWCharge_ParameterFileCal.root";
 ```
 
+or for Mar19 Ag+Ag 1.23 AGeV 
+
+```cpp
+EPresCorrFile = "EPHistQA_mar19_ag123ag_2500A_gen5_pass8_EPResolution_TOFRPC_FWCharge_ParameterFileCal.root";
+```
       
 
 ### 3. Initialise the correction object
